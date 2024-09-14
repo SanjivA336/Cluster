@@ -1,0 +1,42 @@
+{% extends "auth/authBase.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<h1 class="text-light w-100 text-center">Sign Up</h1>
+<h6 class="text-light w-100 border-bottom border-2 border-body-secondary pb-3 text-center">Create your account</h6>
+<div class="container-fluid">
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="border border-1 border-danger rounded-3 bg-danger-subtle p-3 mt-3 text-danger text-center">
+      {{ messages[0] }}
+    </div>
+  {% endif %}
+  {% endwith %}
+  <form method="POST" class="container-fluid p-2" action="/signup">
+    <div class="container-fluid d-flex justify-content-center">
+        <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="text" name="name" placeholder="Your Name" autofocus="" required>
+    </div>
+
+    <div class="container-fluid d-flex justify-content-center">
+        <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="email" name="email" placeholder="Your Email" required>
+    </div>
+
+    <div class="container-fluid d-flex justify-content-center">
+        <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="password" name="password" placeholder="Your Password" required>
+    </div>
+
+    <div class="container-fluid d-flex justify-content-center">
+        <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="password" name="confirm" placeholder="Confirm Password" required>
+    </div>
+
+    <div class="container d-flex justify-content-center mt-2">
+        <button class="btn bg-primary text-light rounded-pill w-75 p-2">Sign Up →</button>
+    </div>
+    <div class="container-fluid text-light text-center d-flex justify-content-center mt-2 mb-0">
+        Already have an account?&nbsp;<a href="/login" class="text-primary" style="text-decoration: none;">Login</a>
+    </div>
+</form>
+
+</div>
+{% endblock %}

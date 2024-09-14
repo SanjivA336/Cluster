@@ -1,0 +1,39 @@
+{% extends "main/mainbase.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="container-fluid row px-2">
+        <div class="col-12">
+            <h1 class="text-center py-2">Your Groups</h1>
+        </div>
+        <div class="col-12">
+            <p class="text-center py-2">These are the groups you're currently in.</p>
+        </div>
+        <hr> <!--Groups-->
+        {% if groups|length == 0 %}
+        <div class="col-12">
+            <p class="text-center py-2 text-light">You're not in any groups right now.</p>
+            <a href="/join" class="container-fluid d-flex justify-content-center text-decoration-none text-light"> <!--Debt-->
+                <div class="container-fluid shadow bg-primary p-2 rounded-pill w-50 text-center" vertical-align="middle">
+                    <p>Join one now!</p>
+                </div>    
+            </a>
+        </div>
+        {% endif %}
+
+        {% for group in groups %}
+        <div class="col-12">
+            <a href="/group/{{group.id}}" class="text-decoration-none text-light">
+                <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-secondary text-center">
+                    <h4>{{group.name}}</h4>
+                    <hr>
+                    <iframe src="/group/{{group.id}}" class="container-fluid"></iframe>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container-fluid vh-100 m-0 p-5 d-flex align-items-center">
+  <div class="container bg-body-tertiary rounded rounded-6 shadow-lg p-3" style="width: 500px;">
+    {% block content %}
+
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}
