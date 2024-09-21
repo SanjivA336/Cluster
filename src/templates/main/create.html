@@ -8,24 +8,9 @@
         <div class="col-12">
             <h1 class="text-center py-2">Your Groups</h1>
         </div>
-        <div class="col-12">
+        <div class="col-12 ">
             <p class="text-center py-2">These are the groups you're currently in.</p>
         </div>
-        <hr> <!--Groups-->
-        {% if groups|length == 0 %}
-        <div class="col-12">
-            <p class="text-center py-2 text-light">You're not in any groups right now.</p>
-            <a href="/join" class="container-fluid d-flex justify-content-center text-decoration-none text-light"> <!--Debt-->
-                <div class="container-fluid shadow bg-primary p-3 rounded-pill w-25 align-items-center justify-content-center d-flex mx-4" text>
-                    <p class="m-0 p-0">Join one now!</p>
-                </div>
-                <p class="text-center py-2 text-light m-0 p-0">or</p>
-                <div class="container-fluid shadow bg-primary p-3 rounded-pill w-25 align-items-center justify-content-center d-flex mx-4" text>
-                    <p class="m-0 p-0">Create one now!</p>
-                </div>
-        </div>
-        {% endif %}
-
         {% for group in groups %}
         <div class="col-12">
             <a href="/group/{{group.id}}" class="text-decoration-none text-light">

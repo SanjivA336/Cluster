@@ -21,7 +21,7 @@ A website to split bills and purchases
     
 - Run Development Server:
     
-      $ s
+      $ flask run --debug
 
 ### MacOS
 - Activate Virtual Environment:
