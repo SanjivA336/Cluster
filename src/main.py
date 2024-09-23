@@ -54,7 +54,7 @@ def create_post():
     
     group = Groups.query.filter_by(name=name, owner_id=current_user.id).first()
     
-    new_member = GroupMembers(group_id=group.id, user_id=current_user.id)
+    new_member = GroupMembers(group_id=group.id, user_id=current_user.id, debt=0)
     group.num_participants = 1
     
     db.session.add(new_member)
@@ -83,7 +83,7 @@ def join_post():
         flash('You are already a member of this group.')
         return redirect(url_for('main.groups'))
         
-    new_member = GroupMembers(group_id=group.id, user_id=current_user.id)
+    new_member = GroupMembers(group_id=group.id, user_id=current_user.id, debt=0)
     
     db.session.add(new_member)
     group.num_participants += 1
@@ -95,7 +95,18 @@ def join_post():
 @login_required
 def group(group_id):
     group = Groups.query.filter_by(id=group_id).first()
-    memberLinks = GroupMembers.query.filter_by(group_id=group_id).all()[:11]
+    
+    if group == None:
+        flash('This group does not exist.')
+        return redirect(url_for('main.groups'))
+    
+    memberLinks = GroupMembers.query.filter_by(group_id=group_id).all()
+    #Check if the user is a member of the group
+    if not any(memberLink.user_id == current_user.id for memberLink in memberLinks):
+        flash('You are not a member of this group.')
+        return redirect(url_for('main.groups'))
+    
+    memberLinks = memberLinks[:11]
     members = []
     for memberLink in memberLinks:
         member = Users.query.filter_by(id=memberLink.user_id).first()
@@ -119,7 +130,7 @@ def group(group_id):
     purchases.sort(key=lambda x: x.date, reverse=True)
     settlements.sort(key=lambda x: x.date, reverse=True)
     
-    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, userLookup=userLookup)
+    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup)
 
 @main.route('/group/<int:group_id>/recordPurchase', methods=['POST'])
 @login_required
@@ -142,9 +153,16 @@ def recordPurchase_post(group_id):
             benefactor = Users.query.filter_by(id=benefactorLink.user_id).first()
             benefactors.append(benefactor.id)
     numBenefactors = len(benefactors)
+    
+    costPartition = int(cost)/numBenefactors
         
     new_purchase = Purchases(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today(), self_purchase=self_purchase)
-    
+    buyer = GroupMembers.query.filter_by(group_id=group_id, user_id=buyer_id).first()
+    if(self_purchase):
+        buyer.debt -= costPartition * (numBenefactors - 1)
+    else:
+        buyer.debt -= float(cost)
+        
     db.session.add(new_purchase)
     db.session.commit()
     
@@ -153,8 +171,31 @@ def recordPurchase_post(group_id):
     for benefactor in benefactors:
         if(benefactor != int(buyer_id)):
             new_benefactor = Benefactors(purchase_id=purchase.id, user_id=benefactor, amount=int(cost)/numBenefactors)
+            bene_user = GroupMembers.query.filter_by(group_id=group_id, user_id=benefactor).first()
+            bene_user.debt += costPartition
             db.session.add(new_benefactor)
             db.session.commit()
     
     return redirect(url_for('main.group', group_id=group_id))
     
+@main.route('/group/<int:group_id>/recordSettlement', methods=['POST'])
+@login_required
+def recordSettlement_post(group_id):
+    sender_id = request.form.get('sender')
+    reciever_id = request.form.get('reciever')
+    amount = request.form.get('amount')
+    
+    group = Groups.query.filter_by(id=group_id).first()
+    
+    new_settlement = Settlements(group_id=group_id, sender_id=sender_id, reciever_id=reciever_id, amount=amount, date=datetime.date.today())
+    
+    sender = GroupMembers.query.filter_by(group_id=group_id, user_id=sender_id).first()
+    reciever = GroupMembers.query.filter_by(group_id=group_id, user_id=reciever_id).first()
+
+    sender.debt -= float(amount)
+    reciever.debt += float(amount)
+    
+    db.session.add(new_settlement)
+    db.session.commit()
+    
+    return redirect(url_for('main.group', group_id=group_id))

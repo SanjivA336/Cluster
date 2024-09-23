@@ -53,11 +53,11 @@
                     <h6 class="col-2 text-center py-2">Users</h6>
                     <h6 class="col-2 text-center py-2">Date</h6>
                     {% for purchase in purchases %}
-                        <p class="col-3 text-center py-2">{{ userLookup[purchase.buyer_id]  }}</p>
-                        <p class="col-3 text-center py-2">{{ purchase.item }}</p>
-                        <p class="col-2 text-center py-2">${{ purchase.cost }}</p>
-                        <p class="col-2 text-center py-2">{{ purchase.num_benefactors }}</p>
-                        <p class="col-2 text-center py-2">{{ purchase.date }}</p>
+                        <p class="col-3 text-center py-2 align-self-center">{{ userLookup[purchase.buyer_id]  }}</p>
+                        <p class="col-3 text-center py-2 align-self-center">{{ purchase.item }}</p>
+                        <p class="col-2 text-center py-2 align-self-center">${{ purchase.cost }}</p>
+                        <p class="col-2 text-center py-2 align-self-center">{{ purchase.num_benefactors }}</p>
+                        <p class="col-2 text-center py-2 align-self-center">{{ purchase.date }}</p>
                     {% endfor %}
                 </div>
             </div>    
@@ -72,10 +72,10 @@
                     <h6 class="col-3 text-center py-2">Amount</h6>
                     <h6 class="col-3 text-center py-2">Date</h6>
                     {% for settlement in settlements %}
-                        <p class="col-3 text-center py-2">{{ userLookup[settlement.sender_id] }}</p>
-                        <p class="col-3 text-center py-2">${{ userLookup[settlement.reciever_id] }}</p>
-                        <p class="col-3 text-center py-2">{{ settlement.amount }}</p>
-                        <p class="col-3 text-center py-2">{{ settlement.date }}</p>
+                        <p class="col-3 text-center py-2 align-self-center">{{ userLookup[settlement.sender_id] }}</p>
+                        <p class="col-3 text-center py-2 align-self-center">{{ userLookup[settlement.reciever_id] }}</p>
+                        <p class="col-3 text-center py-2 align-self-center">${{ settlement.amount }}</p>
+                        <p class="col-3 text-center py-2 align-self-center">{{ settlement.date }}</p>
                     {% endfor %}
                 </div>
             </div>    
@@ -181,7 +181,7 @@
                                 </div>
                                 <div class="container d-flex px-4 w-100"> 
                                     <span class="bg-body-secondary text-light rounded-start-pill ps-3 py-2">$</span>
-                                    <input type="number" class="rounded-end-pill border-0 bg-body-secondary py-2 pe-3 ps-2 w-100" name="cost" aria-label="Item Cost" required>
+                                    <input type="number" class="rounded-end-pill border-0 bg-body-secondary py-2 pe-3 ps-2 w-100" name="amount" aria-label="amount" required>
                                 </div>
                                 <br>
                                 <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->

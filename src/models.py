@@ -29,9 +29,7 @@ class GroupMembers(UserMixin, db.Model): # Records of all members in a group
     id = db.Column(db.Integer, primary_key=True) # member_id
     group_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
-    total_debt = db.Column(db.Float)
-    total_credit = db.Column(db.Float)
-    total_settled = db.Column(db.Float)
+    debt = db.Column(db.Float)
     
 class Purchases(UserMixin, db.Model): # Records of all purchases made in a group
     id = db.Column(db.Integer, primary_key=True) # purchase_id
