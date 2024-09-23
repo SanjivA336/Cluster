@@ -130,60 +130,29 @@ def recordPurchase_post(group_id):
     benefactors = request.form.getlist('benefactors')
     everyone = request.form.get('everyone')
     
+    self_purchase = current_user.id in benefactors
+    
     group = Groups.query.filter_by(id=group_id).first()
 
     if(everyone):
         benefactorLinks = GroupMembers.query.filter_by(group_id=group_id).all()
+        self_purchase = True
         benefactors = []
         for benefactorLink in benefactorLinks:
             benefactor = Users.query.filter_by(id=benefactorLink.user_id).first()
             benefactors.append(benefactor.id)
     numBenefactors = len(benefactors)
         
-    new_purchase = Purchases(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today())
+    new_purchase = Purchases(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today(), self_purchase=self_purchase)
     
     db.session.add(new_purchase)
     db.session.commit()
     
-    purchase = Purchases.query.filter_by(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today()).first()
+    purchase = Purchases.query.filter_by(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today(), self_purchase=self_purchase).first()
     
     for benefactor in benefactors:
         if(benefactor != int(buyer_id)):
-            new_benefactor = Benefactors(purchase_id=purchase.id, user_id=benefactor, amount=int(cost)/numBenefactors, settled=False)
-            db.session.add(new_benefactor)
-            db.session.commit()
-    
-    return redirect(url_for('main.group', group_id=group_id))
-
-@main.route('/group/<int:group_id>/recordSettlement', methods=['POST'])
-@login_required
-def recordSettlement_post(group_id):
-    sender_id = request.form.get('sender')
-    reciever_id = request.form.get('reciever')
-    amount = request.form.get('amount')
-    benefactors = request.form.getlist('benefactors')
-    everyone = request.form.get('everyone')
-    
-    group = Groups.query.filter_by(id=group_id).first()
-
-    if(everyone):
-        benefactorLinks = GroupMembers.query.filter_by(group_id=group_id).all()
-        benefactors = []
-        for benefactorLink in benefactorLinks:
-            benefactor = Users.query.filter_by(id=benefactorLink.user_id).first()
-            benefactors.append(benefactor.id)
-    numBenefactors = len(benefactors)
-        
-    new_purchase = Purchases(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today())
-    
-    db.session.add(new_purchase)
-    db.session.commit()
-    
-    purchase = Purchases.query.filter_by(group_id=group_id, buyer_id=buyer_id, item=item, cost=cost, num_benefactors=numBenefactors, date=datetime.date.today()).first()
-    
-    for benefactor in benefactors:
-        if(benefactor != int(buyer_id)):
-            new_benefactor = Benefactors(purchase_id=purchase.id, user_id=benefactor, amount=int(cost)/numBenefactors, settled=False)
+            new_benefactor = Benefactors(purchase_id=purchase.id, user_id=benefactor, amount=int(cost)/numBenefactors)
             db.session.add(new_benefactor)
             db.session.commit()
     

@@ -29,7 +29,9 @@ class GroupMembers(UserMixin, db.Model): # Records of all members in a group
     id = db.Column(db.Integer, primary_key=True) # member_id
     group_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
-    debt = db.Column(db.Float)
+    total_debt = db.Column(db.Float)
+    total_credit = db.Column(db.Float)
+    total_settled = db.Column(db.Float)
     
 class Purchases(UserMixin, db.Model): # Records of all purchases made in a group
     id = db.Column(db.Integer, primary_key=True) # purchase_id
@@ -39,6 +41,8 @@ class Purchases(UserMixin, db.Model): # Records of all purchases made in a group
     cost = db.Column(db.Float)
     num_benefactors = db.Column(db.Integer)
     date = db.Column(db.Date)
+    self_purchase = db.Column(db.Boolean, default=False)
+
     
 class Settlements(UserMixin, db.Model): # All transactions where a user pays another user
     id = db.Column(db.Integer, primary_key=True) # settlement_id
@@ -53,8 +57,6 @@ class Benefactors(UserMixin, db.Model): # Anyone who benefits from a purchase, i
     purchase_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
     amount = db.Column(db.Float)
-    settled = db.Column(db.Boolean, default=False)
-    settle_id = db.Column(db.Integer)
     
 class JoinCode(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True) #code_id
