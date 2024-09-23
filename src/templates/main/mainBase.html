@@ -5,11 +5,11 @@
   <div class="col-12 p-0 mb-3" style="height: 100px;">
     <div class="d-flex justify-content-between container-fluid shadow-lg bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-tertiary">
       <a href="/" class="text-decoration-none text-light">
-        <img src="static\images\placeholder.svg" alt="Menu" width="50" height="54" class="d-inline-block align-text-top">
+        <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Menu" width="50" height="54" class="d-inline-block align-text-top">
         <h1 class="d-inline-block align-text-top px-2">Splits</h1>
       </a>
       <a class="float-end" href="/profile">
-        <img src="static\images\placeholder.svg" alt="Profile" width="50" height="54" class="d-inline-block align-text-top">
+        <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Profile" width="50" height="54" class="d-inline-block align-text-top">
       </a>
     </div>
   </div>

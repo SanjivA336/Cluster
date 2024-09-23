@@ -56,3 +56,8 @@ class Benefactors(UserMixin, db.Model): # Anyone who benefits from a purchase, i
     settled = db.Column(db.Boolean, default=False)
     settle_id = db.Column(db.Integer)
     
+class JoinCode(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True) #code_id
+    code = db.Column(db.String(100)) 
+    group_id = db.Column(db.Integer)
+    creator = db.Column(db.Integer)

@@ -1,0 +1,251 @@
+{% extends "main/mainbase.html" %}
+
+{% block title %}{{group.name}}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="container-fluid row px-2 justify-content-center">
+        <div class="col-2 text-start">
+            <a href="/groups" data-toggle="modal" data-target="#recordModal" class="text-decoration-none text-light">
+                <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Record" width="50" height="54" class="d-inline-block align-text-top m-0">
+            </a>
+        </div>
+        <div class="col-8">
+            <h1 class="text-center py-2">{{group.name}}</h1>
+        </div>
+        <div class="col-2 text-end">
+            <a href="/groups" data-toggle="modal" data-target="#settingsModal" class="text-decoration-none text-light">
+                <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Settings" width="50" height="54" class="d-inline-block align-text-top m-0">
+            </a>
+        </div>
+        <div class="col-12">
+            <p class="text-center py-2">Here's some information on your group.</p>
+        </div>
+        {% with messages = get_flashed_messages() %} <!--Flash Messages-->
+        {% if messages %}
+        <div class="border border-1 border-danger rounded-4 bg-danger-subtle p-3 m-2 text-danger text-center">
+            {{messages[0]}}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <hr> <!--Dashboard--> 
+        <a href="/group/{{group.id}}/members" class="col-lg-2 col-12 p-2 text-decoration-none text-light"> <!--Debt-->
+            <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
+                <h4>Members</h4>
+                <hr>
+                <div class="container-fluid row p-0 m-0">
+                    {% for member in members %}
+                        <p class="col-lg-12 col-4 text-center py-2 {% if member.id == group.owner_id %} text-primary {% endif %}">
+                            {% if member.id == user.id %} <strong> {{member.name}} </strong> {% else %} {{member.name}} {% endif %}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>    
+        </a>
+        <a href="/group/{{group.id}}/purchases" class="col-lg-5 col-12 p-2 text-decoration-none text-light"> <!--Groups-->
+            <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
+                <h4>Purchase History</h4>
+                <hr>
+                <div class="container-fluid row p-0 m-0">
+                    <h6 class="col-3 text-center py-2">Buyer</h6>
+                    <h6 class="col-3 text-center py-2">Item</h6>
+                    <h6 class="col-2 text-center py-2">Cost</h6>
+                    <h6 class="col-2 text-center py-2">Users</h6>
+                    <h6 class="col-2 text-center py-2">Date</h6>
+                    {% for purchase in purchases %}
+                        <p class="col-3 text-center py-2">{{ userLookup[purchase.buyer_id]  }}</p>
+                        <p class="col-3 text-center py-2">{{ purchase.item }}</p>
+                        <p class="col-2 text-center py-2">${{ purchase.cost }}</p>
+                        <p class="col-2 text-center py-2">{{ purchase.num_benefactors }}</p>
+                        <p class="col-2 text-center py-2">{{ purchase.date }}</p>
+                    {% endfor %}
+                </div>
+            </div>    
+        </a>
+        <a href="/group/{{group.id}}/settlements" class="col-lg-5 col-12 p-2 text-decoration-none text-light"> <!--History-->
+            <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
+                <h4>Settlement History</h4>
+                <hr>
+                <div class="container-fluid row p-0 m-0">
+                    <h6 class="col-3 text-center py-2">Sender</h6>
+                    <h6 class="col-3 text-center py-2">Reciever</h6>
+                    <h6 class="col-3 text-center py-2">Amount</h6>
+                    <h6 class="col-3 text-center py-2">Date</h6>
+                    {% for settlement in settlements %}
+                        <p class="col-3 text-center py-2">{{ userLookup[settlement.sender_id] }}</p>
+                        <p class="col-3 text-center py-2">${{ userLookup[settlement.reciever_id] }}</p>
+                        <p class="col-3 text-center py-2">{{ settlement.amount }}</p>
+                        <p class="col-3 text-center py-2">{{ settlement.date }}</p>
+                    {% endfor %}
+                </div>
+            </div>    
+        </a>
+    </div>
+    <!-- Record Modal -->
+    <div class="modal fade" id="recordModal" tabindex="-1" aria-labelledby="recordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <!--Modal Header-->
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="adderModalLabel">Record a Payment</h1>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!--Modal Body-->
+                <div class="modal-body">
+                    <ul class="nav nav-pills nav-justified p-2" role="tablist"> <!--Tabs-->
+                        <li class="nav-item px-2">
+                            <a class="nav-link active" data-toggle="tab" href="#purchaseTab" role="tab">Record a Purchase</a>
+                        </li>
+                        <li class="nav-item px-2">
+                            <a class="nav-link" data-toggle="tab" href="#settlementTab" role="tab">Record a Settlement</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content"> <!--Tab Content-->
+                        <hr class="w-50 mx-auto">
+                        <div class="tab-pane active" id="purchaseTab" role="tabpanel"> <!--Join Group-->
+                            <form method="POST" class="container-fluid p-2" action="/group/{{group.id}}/recordPurchase">
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Buyer Name-->
+                                    <h5 class="text-light">Buyer: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <select class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" style="appearance: none;" name="buyer" aria-label="Floating label select example" required>
+                                        {% for member in members %}
+                                            <option {% if user.id==member.id %} selected {% endif %} value="{{ member.id }}">{{ member.name }}</option>
+                                        {% endfor%}
+                                    </select>
+                                </div>
+                                <br>
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Item Name-->
+                                    <h5 class="text-light">Item: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <input type="text" class="rounded-pill border-0 bg-body-secondary py-2 ps-3 w-100" name="item" aria-label="Item Name" required>
+                                </div>
+                                <br>
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Item Cost-->
+                                    <h5 class="text-light">Cost: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <span class="bg-body-secondary text-light rounded-start-pill ps-3 py-2">$</span>
+                                    <input type="number" class="rounded-end-pill border-0 bg-body-secondary py-2 pe-3 ps-2 w-100" name="cost" aria-label="Item Cost" required>
+                                </div>
+                                <br>
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Buyer Name-->
+                                    <h5 class="text-light">Users: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <select class="form-select rounded-4 border-1 border-tertiary text-light" style="appearance: none;" name="benefactors" aria-label="Floating label select example" multiple>
+                                        {% for member in members %}
+                                            <option {% if user.id==member.id %} selected {% endif %} value="{{ member.id }}">{{ member.name }}</option>
+                                        {% endfor%}
+                                    </select>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> <!--Share with Everyone-->
+                                    <div class="form-check mx-auto py-2">
+                                        <input class="form-check-input" type="checkbox" name="everyone" checked>
+                                        <p class="text-center text-light">Share with everyone?</p>
+                                    </div>
+                                </div>
+
+                                <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Submit Purchase</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane" id="settlementTab" role="tabpanel"> <!--Create Group-->
+                            <form method="POST" class="container-fluid p-2" action="/group/{{group.id}}/recordSettlement">
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Sender Name-->
+                                    <h5 class="text-light">Sender: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <select class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" style="appearance: none;" name="sender" aria-label="Floating label select example" required>
+                                        {% for member in members %}
+                                            <option {% if user.id==member.id %} selected {% endif %} value="{{ member.id }}">{{ member.name }}</option>
+                                        {% endfor%}
+                                    </select>
+                                </div>
+                                <br>
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Reciever Name-->
+                                    <h5 class="text-light">Reciever: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <select class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" style="appearance: none;" name="reciever" aria-label="Floating label select example" required>
+                                        {% for member in members %}
+                                            <option value="{{ member.id }}">{{ member.name }}</option>
+                                        {% endfor%}
+                                    </select>
+                                </div>
+                                <br>
+                                <div class="container d-flex px-4 w-100 mb-2"> <!--Amount Sent-->
+                                    <h5 class="text-light">Amount: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100"> 
+                                    <span class="bg-body-secondary text-light rounded-start-pill ps-3 py-2">$</span>
+                                    <input type="number" class="rounded-end-pill border-0 bg-body-secondary py-2 pe-3 ps-2 w-100" name="cost" aria-label="Item Cost" required>
+                                </div>
+                                <br>
+                                <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Submit Settlement</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <!--Modal Header-->
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="adderModalLabel">Add a Group</h1>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!--Modal Body-->
+                <div class="modal-body">
+                    <ul class="nav nav-pills nav-justified p-2" role="tablist"> <!--Tabs-->
+                        <li class="nav-item px-2">
+                            <a class="nav-link active" data-toggle="tab" href="#joinTab" role="tab">Join a Group</a>
+                        </li>
+                        <li class="nav-item px-2">
+                            <a class="nav-link" data-toggle="tab" href="#createTab" role="tab">Create a Group</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content"> <!--Tab Content-->
+                        <div class="tab-pane active" id="joinTab" role="tabpanel"> <!--Join Group-->
+                            <form method="POST" class="container-fluid p-2" action="/join">
+                                <div class="container d-flex px-4 mt-3"> <!--Join Code-->
+                                    <h5 class="text-light">&nbsp;Join Code: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100">
+                                    <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="joinCode" name="joinCode" placeholder="Join Code" required>
+                                </div> 
+                                <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Join</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane" id="createTab" role="tabpanel"> <!--Create Group-->
+                            <form method="POST" class="container-fluid p-2" action="/create">
+                                <div class="container d-flex px-4 mt-3 text-center"> <!--Group Name-->
+                                    <h5 class="text-light">&nbsp;Group Name: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100">
+                                    <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="groupName" name="groupName" placeholder="Group Name" required>
+                                </div> 
+                                <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Create</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

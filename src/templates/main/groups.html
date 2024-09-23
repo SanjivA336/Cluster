@@ -1,42 +1,109 @@
 {% extends "main/mainbase.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Groups{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="container-fluid row px-2">
+    <div class="container-fluid row px-2 align-content-center">
         <div class="col-12">
             <h1 class="text-center py-2">Your Groups</h1>
         </div>
         <div class="col-12">
-            <p class="text-center py-2">These are the groups you're currently in.</p>
+            <p class="text-center pt-2">These are the groups you're currently in.</p>
         </div>
-        <hr> <!--Groups-->
-        {% if groups|length == 0 %}
-        <div class="col-12">
-            <p class="text-center py-2 text-light">You're not in any groups right now.</p>
-            <a href="/join" class="container-fluid d-flex justify-content-center text-decoration-none text-light"> <!--Debt-->
-                <div class="container-fluid shadow bg-primary p-3 rounded-pill w-25 align-items-center justify-content-center d-flex mx-4" text>
-                    <p class="m-0 p-0">Join one now!</p>
-                </div>
-                <p class="text-center py-2 text-light m-0 p-0">or</p>
-                <div class="container-fluid shadow bg-primary p-3 rounded-pill w-25 align-items-center justify-content-center d-flex mx-4" text>
-                    <p class="m-0 p-0">Create one now!</p>
-                </div>
+        <div class="col-12 mb-2"> <!--Flash Messages-->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="border border-1 border-danger rounded-4 bg-danger-subtle p-3 m-2 text-danger text-center">
+                        {{messages[0]}}
+                    </div>
+                {% endif %}
+            {% endwith %}
         </div>
-        {% endif %}
-
-        {% for group in groups %}
-        <div class="col-12">
-            <a href="/group/{{group.id}}" class="text-decoration-none text-light">
-                <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-secondary text-center">
-                    <h4>{{group.name}}</h4>
-                    <hr>
-                    <iframe src="/group/{{group.id}}" class="container-fluid"></iframe>
+        <hr> 
+        <div class="col-12"> <!--Groups-->
+            {% for group in groups %} <!-- Group Info -->
+                <a href="/group/{{group.id}}" class="container-fluid text-decoration-none text-light">    
+                    <div class="container-fluid shadow bg-body-tertiary p-4 mx-auto rounded-4 border border-1 border-secondary text-center row">
+                        <div class="col-6 h-100 align-self-center">
+                            <h4 class="text-light my-0">{{group.name}}</h4>
+                            <p class="text-light my-0">{{group.num_participants}} members</p>
+                        </div>
+                        <div class="col-6 h-100 align-self-center">
+                            <p class="text-light my-0">Created on {{group.creation_date}}</p>
+                            <p class="text-light my-0">Last updated on {{group.last_updated}}</p>
+                            <p class="text-light my-0">Deals in {{group.currency}}</p>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        <div class="col-12 my-2"> <!--Add Group-->
+            <a href="/groups" data-toggle="modal" data-target="#adderModal" class="text-decoration-none text-light">
+                <div class="container-fluid w-75 bg-body-tertiary p-4 rounded-4 border border-1 border-tertiary text-center">
+                    {% if groups|length == 0 %}
+                        <p class="text-center text-light py-2 m-0">You are not currently in any groups. Join or create one now!</p>
+                    {% else %}
+                        <p class="text-center text-light py-2 m-0">Want to add another group? Join or create one now!</p>
+                    {% endif %}
+                    <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Add Group" width="50" height="54" class="d-inline-block align-text-top m-0">
                 </div>
             </a>
         </div>
-        {% endfor %}
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="adderModal" tabindex="-1" aria-labelledby="adderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <!--Modal Header-->
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="adderModalLabel">Add a Group</h1>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!--Modal Body-->
+                <div class="modal-body">
+                    <ul class="nav nav-pills nav-justified p-2" role="tablist"> <!--Tabs-->
+                        <li class="nav-item px-2">
+                            <a class="nav-link active" data-toggle="tab" href="#joinTab" role="tab">Join a Group</a>
+                        </li>
+                        <li class="nav-item px-2">
+                            <a class="nav-link" data-toggle="tab" href="#createTab" role="tab">Create a Group</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content"> <!--Tab Content-->
+                        <hr class="w-50 mx-auto">
+                        <div class="tab-pane active" id="joinTab" role="tabpanel"> <!--Join Group-->
+                            <form method="POST" class="container-fluid p-2" action="/join">
+                                <div class="container d-flex px-4 mt-3"> <!--Join Code-->
+                                    <h5 class="text-light">&nbsp;Join Code: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100">
+                                    <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="joinCode" name="joinCode" placeholder="Join Code" required>
+                                </div> 
+                                <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Join</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane" id="createTab" role="tabpanel"> <!--Create Group-->
+                            <form method="POST" class="container-fluid p-2" action="/create">
+                                <div class="container d-flex px-4 mt-3 text-center"> <!--Group Name-->
+                                    <h5 class="text-light">&nbsp;Group Name: </h5>
+                                </div>
+                                <div class="container d-flex px-4 w-100">
+                                    <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="groupName" name="groupName" placeholder="Group Name" required>
+                                </div> 
+                                <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Create</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
+
+

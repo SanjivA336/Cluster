@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-    <div class="container-fluid row px-2">
+    <div class="container-fluid row px-2 align-content-center">
         <div class="col-12">
             <h1 class="text-center py-2">Welcome, {{name}}.</h1>
         </div>
@@ -12,39 +12,31 @@
             <p class="text-center py-2">Here's your dashboard. Everything you need to know, in one place.</p>
         </div>
         <hr> <!--Dashboard-->
-        <div class="col-12"> 
-            <div class="container-fluid row"> <!--Top Row-->
-                <a href="/debt" class="col-6 p-2 text-decoration-none text-light"> <!--Debt-->
-                    <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-secondary text-center">
+        <div class="col-12 row mx-auto"> 
+                <a href="/debt" class="col-lg-6 col-12 p-2 text-decoration-none text-light"> <!--Debt-->
+                    <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
                         <h4>Your Total Debt</h4>
                         <hr>
-                        <iframe src="/debt" class="container-fluid"></iframe>
                     </div>    
                 </a>
-                <a href="/groups" class="col-6 p-2 text-decoration-none text-light"> <!--Groups-->
-                    <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-secondary text-center">
+                <a href="/groups" class="col-lg-6 col-12 p-2 text-decoration-none text-light"> <!--Groups-->
+                    <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
                         <h4>Your Groups</h4>
                         <hr>
-                        <iframe src="/groups" class="container-fluid"></iframe>
                     </div>    
                 </a>
-            </div>    
-        </div>
-        <div class="container-fluid row"> <!--Bottom Row-->
-            <a href="/history" class="col-6 p-2 text-decoration-none text-light"> <!--History-->
-                <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-secondary text-center">
-                    <h4>Your History</h4>
-                    <hr>
-                    <iframe src="/history" class="container-fluid"></iframe>
-                </div>    
-            </a>
-            <a href="/alerts" class="col-6 p-2 text-decoration-none text-light"> <!--Alerts-->
-                <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 h-100 border border-1 border-secondary text-center">
-                    <h4>Your Alerts</h4>
-                    <hr>
-                    <iframe src="/alerts" class="container-fluid"></iframe>
-                </div>    
-            </a>            
+                <a href="/history" class="col-lg-6 col-12 p-2 text-decoration-none text-light"> <!--History-->
+                    <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
+                        <h4>Your History</h4>
+                        <hr>
+                    </div>    
+                </a>
+                <a href="/alerts" class="col-lg-6 col-12 p-2 text-decoration-none text-light"> <!--Alerts-->
+                    <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
+                        <h4>Your Alerts</h4>
+                        <hr>
+                    </div>    
+                </a>
         </div>
     </div>
 </div>
