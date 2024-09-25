@@ -38,7 +38,23 @@
         {% endif %}
         {% endwith %}
         <hr> <!--Dashboard--> 
-        <a href="/group/{{group.id}}/members" class="col-lg-2 col-12 p-2 text-decoration-none text-light"> <!--Debt-->
+        <a href="/group/{{group.id}}/debts" class="col-12 p-2 text-decoration-none text-light"> <!--Debts-->
+            <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
+                <h4>Debts</h4>
+                <hr>
+                <div class="container-fluid row p-0 m-0">
+                    {% for member in members %}
+                        <p class="col-lg-3 col-3 text-end py-2 {% if member.id == group.owner_id %} text-primary {% elif memberLookup[member.id].is_active == False %} text-secondary text-decoration-line-through{% endif %}">
+                            {% if member.id == user.id %} <strong> {{member.name}} </strong> {% else %} {{member.name}} {% endif %}
+                        </p>
+                        <p class="col-lg-3 col-3 text-start py-2 {% if member.id == group.owner_id %} text-primary {% elif memberLookup[member.id].is_active == False %} text-secondary text-decoration-line-through{% endif %}">
+                            {% if member.id == user.id %} <strong> ${{memberLookup[member.id].debt}} </strong> {% else %} ${{memberLookup[member.id].debt}} {% endif %}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>    
+        </a>
+        <a href="/group/{{group.id}}/members" class="col-lg-2 col-12 p-2 text-decoration-none text-light"> <!--Members-->
             <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
                 <h4>Members</h4>
                 <hr>
@@ -51,7 +67,7 @@
                 </div>
             </div>    
         </a>
-        <a href="/group/{{group.id}}/purchases" class="col-lg-5 col-12 p-2 text-decoration-none text-light"> <!--Groups-->
+        <a href="/group/{{group.id}}/purchases" class="col-lg-5 col-12 p-2 text-decoration-none text-light"> <!--Purchases-->
             <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
                 <h4>Purchase History</h4>
                 <hr>
@@ -71,7 +87,7 @@
                 </div>
             </div>    
         </a>
-        <a href="/group/{{group.id}}/settlements" class="col-lg-5 col-12 p-2 text-decoration-none text-light"> <!--History-->
+        <a href="/group/{{group.id}}/settlements" class="col-lg-5 col-12 p-2 text-decoration-none text-light"> <!--Settlements-->
             <div class="container-fluid shadow bg-body-tertiary p-4 rounded-4 border border-1 border-secondary text-center h-100">
                 <h4>Settlement History</h4>
                 <hr>
@@ -209,7 +225,7 @@
             <div class="modal-content">
                 <!--Modal Header-->
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="adderModalLabel">Record a Payment</h1>
+                    <h1 class="modal-title fs-5" id="adderModalLabel">Group Settings</h1>
                     <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <!--Modal Body-->

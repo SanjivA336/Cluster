@@ -120,7 +120,7 @@ def group(group_id):
     members.sort(key=lambda x: x.name, reverse=False)
     
     userLookup = {member.id: member.name for member in members}
-    activeLookup = {memberLink.user_id: memberLink.is_active for memberLink in memberLinks}
+    memberLookup = {memberLink.user_id: memberLink for memberLink in memberLinks}
     
     purchases = Purchases.query.filter_by(group_id=group_id).all()[:10]
     settlements = Settlements.query.filter_by(group_id=group_id).all()[:10]
@@ -136,7 +136,7 @@ def group(group_id):
     purchases.sort(key=lambda x: x.date, reverse=True)
     settlements.sort(key=lambda x: x.date, reverse=True)
     
-    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup, activeLookup=activeLookup)
+    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup, memberLookup=memberLookup)
 
 @main.route('/group/<int:group_id>/recordPurchase', methods=['POST'])
 @login_required
