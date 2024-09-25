@@ -30,6 +30,7 @@ class GroupMembers(UserMixin, db.Model): # Records of all members in a group
     group_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
     debt = db.Column(db.Float)
+    is_active = db.Column(db.Boolean, default=True)
     
 class Purchases(UserMixin, db.Model): # Records of all purchases made in a group
     id = db.Column(db.Integer, primary_key=True) # purchase_id
@@ -55,9 +56,9 @@ class Benefactors(UserMixin, db.Model): # Anyone who benefits from a purchase, i
     purchase_id = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
     amount = db.Column(db.Float)
+    group_id = db.Column(db.Integer)
     
-class JoinCode(UserMixin, db.Model):
+class JoinCodes(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True) #code_id
     code = db.Column(db.String(100)) 
     group_id = db.Column(db.Integer)
-    creator = db.Column(db.Integer)

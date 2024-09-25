@@ -6,11 +6,18 @@
 <h1 class="text-light w-100 text-center">Welcome Back</h1>
 <h6 class="text-light w-100 border-bottom border-2 border-body-secondary pb-3 text-center">Please enter your email and password </h6>
 <div class="container-fluid">
-  {% with messages = get_flashed_messages() %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    <div class="border border-1 border-danger rounded-3 bg-danger-subtle p-3 mt-3 text-danger text-center">
-      {{ messages[0] }}
-    </div>
+      {% for category, message in messages %}
+          <div class="border border-1 rounded-4 p-3 m-2 text-center
+              {% if category == 'error' %}
+                  border-danger bg-danger-subtle text-danger
+              {% elif category == 'success' %}
+                  border-success bg-success-subtle text-success
+              {% endif %}">
+              {{ message }}
+          </div>
+      {% endfor %}
   {% endif %}
   {% endwith %}
   <form method="POST" class="container-fluid p-2" action="/login">

@@ -12,12 +12,19 @@
             <p class="text-center pt-2">These are the groups you're currently in.</p>
         </div>
         <div class="col-12 mb-2"> <!--Flash Messages-->
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="border border-1 border-danger rounded-4 bg-danger-subtle p-3 m-2 text-danger text-center">
-                        {{messages[0]}}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="border border-1 rounded-4 p-3 m-2 text-center
+                        {% if category == 'error' %}
+                            border-danger bg-danger-subtle text-danger
+                        {% elif category == 'success' %}
+                            border-success bg-success-subtle text-success
+                        {% endif %}">
+                        {{ message }}
                     </div>
-                {% endif %}
+                {% endfor %}
+            {% endif %}
             {% endwith %}
         </div>
         <hr> 

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
-from .models import Users, UserData, Groups, GroupMembers, Purchases, Settlements, Benefactors
+from .models import Users, UserData, Groups, GroupMembers, Purchases, Settlements, Benefactors, JoinCodes
 from sqlalchemy import or_
 from . import db
 import string
@@ -17,10 +17,12 @@ def home():
     name = Users.query.filter_by(id=current_user.id).first().name
     return render_template('main/home.html', path=request.path, name=name)
 
+# Group Pages -----
+
 @main.route('/groups')
 @login_required
 def groups():
-    peronas = GroupMembers.query.filter_by(user_id=current_user.id).all()
+    peronas = GroupMembers.query.filter_by(user_id=current_user.id, is_active=True).all()
     groups = []
     for persona in peronas:
         group = Groups.query.filter_by(id=persona.group_id).first()
@@ -29,11 +31,6 @@ def groups():
     groups.sort(key=lambda x: x.last_updated, reverse=True)
     
     return render_template('main/groups.html', path=request.path, groups=groups)
-
-@main.route('/create')
-@login_required
-def create():
-    return redirect(url_for('main.groups'))
 
 @main.route('/create', methods=['POST'])
 @login_required
@@ -44,7 +41,7 @@ def create_post():
     group = Groups.query.filter_by(name=name, owner_id=current_user.id).first()
     
     if group:
-        flash('You already own a group by this name.')
+        flash('You already own a group by this name.', 'error')
         return redirect(url_for('main.groups'))
         
     new_group = Groups(name=name, owner_id=current_user.id, creation_date=datetime.date.today(), last_updated=datetime.date.today())
@@ -57,30 +54,36 @@ def create_post():
     new_member = GroupMembers(group_id=group.id, user_id=current_user.id, debt=0)
     group.num_participants = 1
     
+    
+    characters = string.ascii_letters + string.digits
+    joinCode = generateJoinCode().upper()
+    
+    new_joinCode = JoinCodes(group_id=group.id, code=joinCode)
+    
+    db.session.add(new_joinCode)
     db.session.add(new_member)
     db.session.commit()
     
-    return redirect(url_for('main.groups'))
-
-
-@main.route('/join')
-@login_required
-def join():
+    flash('Group created successfully. Your join code is ' + joinCode + '.', 'success')
+    
     return redirect(url_for('main.groups'))
 
 @main.route('/join', methods=['POST'])
 @login_required
 def join_post():
-    joinCode = request.form.get('joinCode')
+    joinCode = request.form.get('joinCode').upper()
     
-    group = Groups.query.filter_by(id=joinCode).first()
-    persona = GroupMembers.query.filter_by(group_id=joinCode, user_id=current_user.id).first()
+    code = JoinCodes.query.filter_by(code=joinCode).first()
     
-    if group is None:
-        flash('That group does not exist.')
+    if code is None:
+        flash('That join code is invalid.', 'error')
         return redirect(url_for('main.groups'))
+    
+    group = Groups.query.filter_by(id=code.group_id).first()
+    persona = GroupMembers.query.filter_by(group_id=group.id, user_id=current_user.id).first()
+    
     if persona:
-        flash('You are already a member of this group.')
+        flash('You are already a member of this group.', 'error')
         return redirect(url_for('main.groups'))
         
     new_member = GroupMembers(group_id=group.id, user_id=current_user.id, debt=0)
@@ -91,22 +94,24 @@ def join_post():
     
     return redirect(url_for('main.groups'))
 
+# Individual Group Pages -----
+
 @main.route('/group/<int:group_id>')
 @login_required
 def group(group_id):
     group = Groups.query.filter_by(id=group_id).first()
     
     if group == None:
-        flash('This group does not exist.')
+        flash('This group does not exist.', 'error')
         return redirect(url_for('main.groups'))
     
-    memberLinks = GroupMembers.query.filter_by(group_id=group_id).all()
+    persona = GroupMembers.query.filter_by(group_id=group_id, user_id=current_user.id, is_active=True).first()
     #Check if the user is a member of the group
-    if not any(memberLink.user_id == current_user.id for memberLink in memberLinks):
-        flash('You are not a member of this group.')
+    if persona is None:
+        flash('You are not a member of this group.', 'error')
         return redirect(url_for('main.groups'))
-    
-    memberLinks = memberLinks[:11]
+        
+    memberLinks = GroupMembers.query.filter_by(group_id=group_id).all()[:11]
     members = []
     for memberLink in memberLinks:
         member = Users.query.filter_by(id=memberLink.user_id).first()
@@ -115,6 +120,7 @@ def group(group_id):
     members.sort(key=lambda x: x.name, reverse=False)
     
     userLookup = {member.id: member.name for member in members}
+    activeLookup = {memberLink.user_id: memberLink.is_active for memberLink in memberLinks}
     
     purchases = Purchases.query.filter_by(group_id=group_id).all()[:10]
     settlements = Settlements.query.filter_by(group_id=group_id).all()[:10]
@@ -130,7 +136,7 @@ def group(group_id):
     purchases.sort(key=lambda x: x.date, reverse=True)
     settlements.sort(key=lambda x: x.date, reverse=True)
     
-    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup)
+    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup, activeLookup=activeLookup)
 
 @main.route('/group/<int:group_id>/recordPurchase', methods=['POST'])
 @login_required
@@ -170,7 +176,7 @@ def recordPurchase_post(group_id):
     
     for benefactor in benefactors:
         if(benefactor != int(buyer_id)):
-            new_benefactor = Benefactors(purchase_id=purchase.id, user_id=benefactor, amount=int(cost)/numBenefactors)
+            new_benefactor = Benefactors(purchase_id=purchase.id, user_id=benefactor, amount=int(cost)/numBenefactors, group_id=group_id)
             bene_user = GroupMembers.query.filter_by(group_id=group_id, user_id=benefactor).first()
             bene_user.debt += costPartition
             db.session.add(new_benefactor)
@@ -199,3 +205,99 @@ def recordSettlement_post(group_id):
     db.session.commit()
     
     return redirect(url_for('main.group', group_id=group_id))
+
+@main.route('/group/<int:group_id>/edit', methods=['POST'])
+@login_required
+def groupEdit_post(group_id):
+    groupName = request.form.get('groupName')
+    
+    group = Groups.query.filter_by(id=group_id).first()
+    
+    similarGroup = Groups.query.filter_by(name=groupName, owner_id=current_user.id).all()
+    
+    if(len(similarGroup) > 0):
+        flash('You already own a group by this name.', 'error')
+        return redirect(url_for('main.group', group_id=group_id))
+    
+    group.name = groupName
+    
+    db.session.commit()
+    
+    flash('Group name updated successfully.', 'success')
+    
+    return redirect(url_for('main.group', group_id=group_id))
+
+@main.route('/group/<int:group_id>/delete', methods=['POST'])
+@login_required
+def groupDelete_post(group_id):
+    groupName = request.form.get('groupName')
+    
+    group = Groups.query.filter_by(id=group_id).first()
+        
+    if group.owner_id != current_user.id:
+        flash('You are not the owner of this group.', 'error')
+        return redirect(url_for('main.group', group_id=group_id))
+    elif group.name != groupName:
+        flash('Group name does not match.', 'error')
+        return redirect(url_for('main.group', group_id=group_id))
+    
+    members = GroupMembers.query.filter_by(group_id=group_id).all()
+    for member in members:
+        db.session.delete(member)
+    
+    purchases = Purchases.query.filter_by(group_id=group_id).all()
+    for purchase in purchases:
+        db.session.delete(purchase)
+        
+    settlements = Settlements.query.filter_by(group_id=group_id).all()
+    for settlement in settlements:
+        db.session.delete(settlement)
+        
+    joinCodes = JoinCodes.query.filter_by(group_id=group_id).all()
+    for joinCode in joinCodes:
+        db.session.delete(joinCode)
+        
+    benefactors = Benefactors.query.filter_by(group_id=group_id).all()
+    for benefactor in benefactors:
+        db.session.delete(benefactor)
+        
+    db.session.delete(group)
+    db.session.commit()
+    
+    flash('Group deleted successfully.', 'success')
+    
+    return redirect(url_for('main.groups'))
+
+@main.route('/group/<int:group_id>/leave')
+@login_required
+def leave(group_id):
+    group = Groups.query.filter_by(id=group_id).first()
+    
+    member = GroupMembers.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    
+    if member is None:
+        flash('You are not a member of this group.', 'error')
+        return redirect(url_for('main.groups'))
+    
+    if group.owner_id == current_user.id:
+        flash('You cannot leave a group you own. Delete the group instead.', 'error')
+        return redirect(url_for('main.group', group_id=group_id))
+    
+    member.is_active = False
+    group.num_participants -= 1
+        
+    db.session.commit()
+    
+    return redirect(url_for('main.groups'))
+
+
+
+# Helper Functions -----
+
+def generateJoinCode():
+    characters = string.ascii_letters + string.digits
+    joinCode = ''.join(random.choice(characters) for _ in range(6))
+    #Check if the join code is already in use
+    while JoinCodes.query.filter_by(code=joinCode).first():
+        joinCode = ''.join(random.choice(characters) for _ in range(6))
+    return joinCode

@@ -14,18 +14,27 @@
             <h1 class="text-center py-2">{{group.name}}</h1>
         </div>
         <div class="col-2 text-end">
-            <a href="/groups" data-toggle="modal" data-target="#settingsModal" class="text-decoration-none text-light">
-                <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Settings" width="50" height="54" class="d-inline-block align-text-top m-0">
-            </a>
+            {% if group.owner_id == user.id %}
+                <a href="/groups" data-toggle="modal" data-target="#settingsModal" class="text-decoration-none text-light">
+                    <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Settings" width="50" height="54" class="d-inline-block align-text-top m-0">
+                </a>
+            {% endif %}
         </div>
         <div class="col-12">
             <p class="text-center py-2">Here's some information on your group.</p>
         </div>
-        {% with messages = get_flashed_messages() %} <!--Flash Messages-->
+        {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div class="border border-1 border-danger rounded-4 bg-danger-subtle p-3 m-2 text-danger text-center">
-            {{messages[0]}}
-        </div>
+            {% for category, message in messages %}
+                <div class="border border-1 rounded-4 p-3 m-2 text-center
+                    {% if category == 'error' %}
+                        border-danger bg-danger-subtle text-danger
+                    {% elif category == 'success' %}
+                        border-success bg-success-subtle text-success
+                    {% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endif %}
         {% endwith %}
         <hr> <!--Dashboard--> 
@@ -35,7 +44,7 @@
                 <hr>
                 <div class="container-fluid row p-0 m-0">
                     {% for member in members %}
-                        <p class="col-lg-12 col-4 text-center py-2 {% if member.id == group.owner_id %} text-primary {% endif %}">
+                        <p class="col-lg-12 col-4 text-center py-2 {% if member.id == group.owner_id %} text-primary {% elif activeLookup[member.id] == False %} text-secondary text-decoration-line-through{% endif %}">
                             {% if member.id == user.id %} <strong> {{member.name}} </strong> {% else %} {{member.name}} {% endif %}
                         </p>
                     {% endfor %}
@@ -200,43 +209,44 @@
             <div class="modal-content">
                 <!--Modal Header-->
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="adderModalLabel">Add a Group</h1>
+                    <h1 class="modal-title fs-5" id="adderModalLabel">Record a Payment</h1>
                     <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <!--Modal Body-->
                 <div class="modal-body">
                     <ul class="nav nav-pills nav-justified p-2" role="tablist"> <!--Tabs-->
                         <li class="nav-item px-2">
-                            <a class="nav-link active" data-toggle="tab" href="#joinTab" role="tab">Join a Group</a>
+                            <a class="nav-link active" data-toggle="tab" href="#editTab" role="tab">Edit Group</a>
                         </li>
                         <li class="nav-item px-2">
-                            <a class="nav-link" data-toggle="tab" href="#createTab" role="tab">Create a Group</a>
+                            <a class="nav-link" data-toggle="tab" href="#deleteTab" role="tab">Delete Group</a>
                         </li>
                     </ul>
                     <div class="tab-content"> <!--Tab Content-->
-                        <div class="tab-pane active" id="joinTab" role="tabpanel"> <!--Join Group-->
-                            <form method="POST" class="container-fluid p-2" action="/join">
-                                <div class="container d-flex px-4 mt-3"> <!--Join Code-->
-                                    <h5 class="text-light">&nbsp;Join Code: </h5>
+                        <hr class="w-50 mx-auto">
+                        <div class="tab-pane active" id="editTab" role="tabpanel"> <!--Edit Group-->
+                            <form method="POST" class="container-fluid p-2" action="/group/{{group.id}}/edit">
+                                <div class="container d-flex px-4 mt-3 text-center"> <!--Group Name-->
+                                    <h5 class="text-light">&nbsp;New Group Name: </h5>
                                 </div>
                                 <div class="container d-flex px-4 w-100">
-                                    <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="joinCode" name="joinCode" placeholder="Join Code" required>
+                                    <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="groupName" name="groupName" placeholder="Group Name" value="{{group.name}}" required>
                                 </div> 
                                 <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
-                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Join</button>
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Confirm Changes</button>
                                 </div>
                             </form>
                         </div>
-                        <div class="tab-pane" id="createTab" role="tabpanel"> <!--Create Group-->
-                            <form method="POST" class="container-fluid p-2" action="/create">
+                        <div class="tab-pane" id="deleteTab" role="tabpanel"> <!--Create Group-->
+                            <form method="POST" class="container-fluid p-2" action="/group/{{group.id}}/delete">
                                 <div class="container d-flex px-4 mt-3 text-center"> <!--Group Name-->
-                                    <h5 class="text-light">&nbsp;Group Name: </h5>
+                                    <h5 class="text-light">&nbsp;Confirm Group Name: </h5>
                                 </div>
                                 <div class="container d-flex px-4 w-100">
                                     <input type="text" class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" id="groupName" name="groupName" placeholder="Group Name" required>
                                 </div> 
                                 <div class="container d-flex justify-content-center mt-3"> <!--Submit Button-->
-                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Create</button>
+                                    <button class="btn bg-primary text-light rounded-pill py-2 px-4 mx-2 border-0">Delete Group</button>
                                 </div>
                             </form>
                         </div>
