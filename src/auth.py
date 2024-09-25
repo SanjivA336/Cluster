@@ -22,7 +22,7 @@ def login_post():
     user = Users.query.filter_by(email=email).first()
     
     if not user or not check_password_hash(user.password_hash, password):
-        flash('Please check your login details and try again.')
+        flash('Please check your login details and try again.', 'error')
         return redirect(url_for('auth.login'))
     
     login_user(user, remember=remember)
@@ -45,10 +45,10 @@ def signup_post():
     user = Users.query.filter_by(email=email).first()
     
     if user:
-        flash('Email address already exists.')
+        flash('An account with this email address already exists.', 'error')
         return redirect(url_for('auth.signup'))
     elif password != confirm:
-        flash('Passwords do not match.')
+        flash('Passwords do not match.', 'error')
         return redirect(url_for('auth.signup'))
     
     password = generate_password_hash(password, method='pbkdf2:sha256')

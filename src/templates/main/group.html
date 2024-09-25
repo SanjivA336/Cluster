@@ -14,7 +14,7 @@
             <h1 class="text-center py-2">{{group.name}}</h1>
         </div>
         <div class="col-2 text-end">
-            {% if group.owner_id == user.id %}
+            {% if group.owner_id == current_user.id %}
                 <a href="/groups" data-toggle="modal" data-target="#settingsModal" class="text-decoration-none text-light">
                     <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Settings" width="50" height="54" class="d-inline-block align-text-top m-0">
                 </a>
@@ -44,11 +44,11 @@
                 <hr>
                 <div class="container-fluid row p-0 m-0">
                     {% for member in members %}
-                        <p class="col-lg-3 col-3 text-end py-2 {% if member.id == group.owner_id %} text-primary {% elif memberLookup[member.id].is_active == False %} text-secondary text-decoration-line-through{% endif %}">
-                            {% if member.id == user.id %} <strong> {{member.name}} </strong> {% else %} {{member.name}} {% endif %}
+                        <p class="col-lg-3 col-3 text-end py-2 {% if member.user_id == group.owner_id %} text-primary {% elif member.is_active == False %} text-secondary text-decoration-line-through{% endif %}">
+                            {% if member.user_id == current_user.id %} <strong> {{userLookup[member.user_id].name}} </strong> {% else %} {{userLookup[member.user_id].name}} {% endif %}
                         </p>
-                        <p class="col-lg-3 col-3 text-start py-2 {% if member.id == group.owner_id %} text-primary {% elif memberLookup[member.id].is_active == False %} text-secondary text-decoration-line-through{% endif %}">
-                            {% if member.id == user.id %} <strong> ${{memberLookup[member.id].debt}} </strong> {% else %} ${{memberLookup[member.id].debt}} {% endif %}
+                        <p class="col-lg-3 col-3 text-start py-2 {% if member.user_id == group.owner_id %} text-primary {% elif member.is_active == False %} text-secondary text-decoration-line-through{% endif %}">
+                            {% if member.user_id == current_user.id %} <strong> ${{member.debt}} </strong> {% else %} ${{member.debt}} {% endif %}
                         </p>
                     {% endfor %}
                 </div>
@@ -60,8 +60,8 @@
                 <hr>
                 <div class="container-fluid row p-0 m-0">
                     {% for member in members %}
-                        <p class="col-lg-12 col-4 text-center py-2 {% if member.id == group.owner_id %} text-primary {% elif activeLookup[member.id] == False %} text-secondary text-decoration-line-through{% endif %}">
-                            {% if member.id == user.id %} <strong> {{member.name}} </strong> {% else %} {{member.name}} {% endif %}
+                        <p class="col-lg-12 col-4 text-center py-2 {% if member.user_id == group.owner_id %} text-primary {% elif member.is_active == False %} text-secondary text-decoration-line-through{% endif %}">
+                            {% if member.user_id == current_user.id %} <strong> {{userLookup[member.user_id].name}} </strong> {% else %} {{userLookup[member.user_id].name}} {% endif %}
                         </p>
                     {% endfor %}
                 </div>
@@ -135,7 +135,7 @@
                                 <div class="container d-flex px-4 w-100"> 
                                     <select class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" style="appearance: none;" name="buyer" aria-label="Floating label select example" required>
                                         {% for member in members %}
-                                            <option {% if user.id==member.id %} selected {% endif %} value="{{ member.id }}">{{ member.name }}</option>
+                                            <option {% if current_user.id==member.user_id %} selected {% endif %} value="{{ member.user_id }}">{{ userLookup[member.user_id].name }}</option>
                                         {% endfor%}
                                     </select>
                                 </div>
@@ -161,7 +161,7 @@
                                 <div class="container d-flex px-4 w-100"> 
                                     <select class="form-select rounded-4 border-1 border-tertiary text-light" style="appearance: none;" name="benefactors" aria-label="Floating label select example" multiple>
                                         {% for member in members %}
-                                            <option {% if user.id==member.id %} selected {% endif %} value="{{ member.id }}">{{ member.name }}</option>
+                                            <option {% if current_user.id==member.user_id %} selected {% endif %} value="{{ member.user_id }}">{{ userLookup[member.user_id].name }}</option>
                                         {% endfor%}
                                     </select>
                                 </div>
@@ -185,7 +185,7 @@
                                 <div class="container d-flex px-4 w-100"> 
                                     <select class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" style="appearance: none;" name="sender" aria-label="Floating label select example" required>
                                         {% for member in members %}
-                                            <option {% if user.id==member.id %} selected {% endif %} value="{{ member.id }}">{{ member.name }}</option>
+                                            <option {% if current_user.id==member.user_id %} selected {% endif %} value="{{ member.user_id }}">{{ userLookup[member.user_id].name }}</option>
                                         {% endfor%}
                                     </select>
                                 </div>
@@ -196,7 +196,7 @@
                                 <div class="container d-flex px-4 w-100"> 
                                     <select class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" style="appearance: none;" name="reciever" aria-label="Floating label select example" required>
                                         {% for member in members %}
-                                            <option value="{{ member.id }}">{{ member.name }}</option>
+                                            <option value="{{ member.user_id }}">{{ userLookup[member.user_id].name }}</option>
                                         {% endfor%}
                                     </select>
                                 </div>

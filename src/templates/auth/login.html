@@ -6,38 +6,37 @@
 <h1 class="text-light w-100 text-center">Welcome Back</h1>
 <h6 class="text-light w-100 border-bottom border-2 border-body-secondary pb-3 text-center">Please enter your email and password </h6>
 <div class="container-fluid">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-      {% for category, message in messages %}
-          <div class="border border-1 rounded-4 p-3 m-2 text-center
-              {% if category == 'error' %}
-                  border-danger bg-danger-subtle text-danger
-              {% elif category == 'success' %}
-                  border-success bg-success-subtle text-success
-              {% endif %}">
-              {{ message }}
-          </div>
-      {% endfor %}
-  {% endif %}
-  {% endwith %}
-  <form method="POST" class="container-fluid p-2" action="/login">
-    <div class="container-fluid d-flex justify-content-center">
-        <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="email" name="email" placeholder="Your Email" autofocus="">
-    </div>
-    <div class="container-fluid d-flex justify-content-center">
-        <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="password" name="password" placeholder="Your Password">
-    </div>
-    <div class="form-check mb-2 d-flex justify-content-center">
-        <input class="form-check-input bg-primary" type="checkbox" value="" name="remember" checked>
-        <label class="form-check-label text-light" for="remember">&nbsp;Remember me</label>
-    </div>
-    <div class="container d-flex justify-content-center">
-        <button class="btn bg-primary text-light rounded-pill w-75 p-2">Login →</button>
-    </div>
-    <div class="container-fluid text-light text-center d-flex justify-content-center mt-2 mb-0">
-      Don't have an account?&nbsp;<a href="/signup" class="text-primary" style="text-decoration: none;">Sign Up</a>
-    </div>
-  </form>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="border border-1 rounded-4 p-3 m-2 text-center
+                {% if category == 'error' %}
+                    border-danger bg-danger-subtle text-danger
+                {% elif category == 'success' %}
+                    border-success bg-success-subtle text-success
+                {% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <form method="POST" class="container-fluid p-2" action="/login">
+        <div class="container-fluid d-flex justify-content-center">
+            <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="email" name="email" placeholder="Your Email" autofocus="">
+        </div>
+        <div class="container-fluid d-flex justify-content-center">
+            <input class="rounded-pill py-2 px-3 w-100 my-2 bg-body-secondary border-0 text-light" type="password" name="password" placeholder="Your Password">
+        </div>
+        <div class="form-check mb-2 d-flex justify-content-center">
+            <input class="form-check-input bg-primary" type="checkbox" value="" name="remember" checked>
+            <label class="form-check-label text-light" for="remember">&nbsp;Remember me</label>
+        </div>
+        <div class="container d-flex justify-content-center">
+            <button class="btn bg-primary text-light rounded-pill w-75 p-2">Login →</button>
+        </div>
+        <div class="container-fluid text-light text-center d-flex justify-content-center mt-2 mb-0">
+        Don't have an account?&nbsp;<a href="/signup" class="text-primary" style="text-decoration: none;">Sign Up</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

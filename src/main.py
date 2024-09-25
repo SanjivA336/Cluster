@@ -22,10 +22,10 @@ def home():
 @main.route('/groups')
 @login_required
 def groups():
-    peronas = GroupMembers.query.filter_by(user_id=current_user.id, is_active=True).all()
+    members = GroupMembers.query.filter_by(user_id=current_user.id, is_active=True).all()
     groups = []
-    for persona in peronas:
-        group = Groups.query.filter_by(id=persona.group_id).first()
+    for member in members:
+        group = Groups.query.filter_by(id=member.group_id).first()
         groups.append(group)
     
     groups.sort(key=lambda x: x.last_updated, reverse=True)
@@ -35,33 +35,30 @@ def groups():
 @main.route('/create', methods=['POST'])
 @login_required
 def create_post():
-    name = request.form.get('groupName')
-    #currency = request.form.get('currency')
-        
-    group = Groups.query.filter_by(name=name, owner_id=current_user.id).first()
+    name = request.form.get('groupName')     
     
+    # Check if the user already owns a group by this name
+    group = Groups.query.filter_by(name=name, owner_id=current_user.id).first()
     if group:
         flash('You already own a group by this name.', 'error')
         return redirect(url_for('main.groups'))
-        
-    new_group = Groups(name=name, owner_id=current_user.id, creation_date=datetime.date.today(), last_updated=datetime.date.today())
     
-    db.session.add(new_group)
+    # Create the group
+    group = Groups(name=name, owner_id=current_user.id, creation_date=datetime.date.today(), last_updated=datetime.date.today())
+    db.session.add(group)
     db.session.commit()
     
-    group = Groups.query.filter_by(name=name, owner_id=current_user.id).first()
-    
+    # Add the user to the group
     new_member = GroupMembers(group_id=group.id, user_id=current_user.id, debt=0)
     group.num_participants = 1
     
-    
+    # Generate a join code
     characters = string.ascii_letters + string.digits
     joinCode = generateJoinCode().upper()
-    
     new_joinCode = JoinCodes(group_id=group.id, code=joinCode)
     
-    db.session.add(new_joinCode)
     db.session.add(new_member)
+    db.session.add(new_joinCode)
     db.session.commit()
     
     flash('Group created successfully. Your join code is ' + joinCode + '.', 'success')
@@ -70,24 +67,23 @@ def create_post():
 
 @main.route('/join', methods=['POST'])
 @login_required
-def join_post():
-    joinCode = request.form.get('joinCode').upper()
+def join_post():    
+    joinCode = JoinCodes.query.filter_by(code=request.form.get('joinCode').upper()).first()
     
-    code = JoinCodes.query.filter_by(code=joinCode).first()
-    
-    if code is None:
+    # Check if the join code is valid
+    if joinCode is None:
         flash('That join code is invalid.', 'error')
         return redirect(url_for('main.groups'))
     
-    group = Groups.query.filter_by(id=code.group_id).first()
-    persona = GroupMembers.query.filter_by(group_id=group.id, user_id=current_user.id).first()
-    
-    if persona:
+    # Check if the user is already a member of the group
+    group = Groups.query.filter_by(id=joinCode.group_id).first()
+    member = GroupMembers.query.filter_by(group_id=group.id, user_id=current_user.id).first()
+    if member:
         flash('You are already a member of this group.', 'error')
         return redirect(url_for('main.groups'))
         
+    # Add the user to the group
     new_member = GroupMembers(group_id=group.id, user_id=current_user.id, debt=0)
-    
     db.session.add(new_member)
     group.num_participants += 1
     db.session.commit()
@@ -101,46 +97,53 @@ def join_post():
 def group(group_id):
     group = Groups.query.filter_by(id=group_id).first()
     
+    # Check if the group exists
     if group == None:
         flash('This group does not exist.', 'error')
         return redirect(url_for('main.groups'))
     
+    # Check if the user is a member of the group
     persona = GroupMembers.query.filter_by(group_id=group_id, user_id=current_user.id, is_active=True).first()
-    #Check if the user is a member of the group
     if persona is None:
         flash('You are not a member of this group.', 'error')
         return redirect(url_for('main.groups'))
-        
-    memberLinks = GroupMembers.query.filter_by(group_id=group_id).all()[:11]
-    members = []
-    for memberLink in memberLinks:
-        member = Users.query.filter_by(id=memberLink.user_id).first()
-        members.append(member)
     
-    members.sort(key=lambda x: x.name, reverse=False)
     
-    userLookup = {member.id: member.name for member in members}
-    memberLookup = {memberLink.user_id: memberLink for memberLink in memberLinks}
+    # Get the members of the group
+    members = GroupMembers.query.filter_by(group_id=group_id).all()[:11]
+    users = []
+    for member in members:
+        user = Users.query.filter_by(id=member.user_id).first()
+        users.append(user)
     
+    # Sort the members by name
+    userLookup = {user.id: user for user in users}
+    members.sort(key=lambda x: userLookup[x.user_id].name, reverse=False)
+    
+    # Move owner to first position
+    for i in range(len(members)):
+        if members[i].user_id == group.owner_id:
+            members.insert(0, members.pop(i))
+            break
+    
+    # Get the group's purchases (Format as MM/DD)
     purchases = Purchases.query.filter_by(group_id=group_id).all()[:10]
-    settlements = Settlements.query.filter_by(group_id=group_id).all()[:10]
-    
-    # Format the date to exclude the year
     for purchase in purchases:
-        purchase.date = purchase.date.strftime("%m/%d")  # Format as MM/DD
-        
-        # Format the date to exclude the year
-    for settlement in settlements:
-        settlement.date = settlement.date.strftime("%m/%d")  # Format as MM/DD
-        
+        purchase.date = purchase.date.strftime("%m/%d")
     purchases.sort(key=lambda x: x.date, reverse=True)
+    
+    # Get the group's settlements (Format as MM/DD)
+    settlements = Settlements.query.filter_by(group_id=group_id).all()[:10]
+    for settlement in settlements:
+        settlement.date = settlement.date.strftime("%m/%d")
     settlements.sort(key=lambda x: x.date, reverse=True)
     
-    return render_template('main/group.html', path=request.path, user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup, memberLookup=memberLookup)
+    return render_template('main/group.html', path=request.path, current_user=current_user, group=group, members=members, purchases=purchases, settlements=settlements, userLookup=userLookup)
 
 @main.route('/group/<int:group_id>/recordPurchase', methods=['POST'])
 @login_required
 def recordPurchase_post(group_id):
+    
     buyer_id = request.form.get('buyer')
     item = request.form.get('item')
     cost = request.form.get('cost')
